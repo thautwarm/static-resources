@@ -2,7 +2,7 @@
 ```bnf
 action  : @forward <Julia Float64>
         | @turn <Julia Float64>
-        | @when <Julia Function> => begin actions end
+        | @when <Julia Function> => begin <actions> end
 
 actions : <action>
         | <actions> <action>
