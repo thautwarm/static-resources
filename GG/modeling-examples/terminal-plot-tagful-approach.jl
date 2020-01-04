@@ -64,23 +64,4 @@ interpret_dsl(pen::Pen, stmts::AbstractArray{Statement}) =
     end
 end
 
-## Macro for building modeling constructs from Julia abstract syntax trees.
-macro plot_dsl(ex)
-    @when :(begin $(statements...) end) = ex begin
-        actions = []
-        for stmt in statements
-            @match stmt begin
-                :(@forward $line $distance) =>
-                    push!(actions, line, :($Forward($distance)))
-                :(@turn $line $angle) =>
-                    push!(actions, line, :($Turn($angle)))
-                _ => error(string(stmt))
-            end
-        end
-        Expr(:vect, actions...) |> esc
-    @otherwise
-        error("Invalid syntax")
-    end
-end
-
-end
+end # module

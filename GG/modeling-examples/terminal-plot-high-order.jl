@@ -2,6 +2,7 @@
 ```bnf
 action  : @forward <Julia Float64>
         | @turn <Julia Float64>
+        | @when <Julia Function> => begin actions end
 
 actions : <action>
         | <actions> <action>
@@ -9,7 +10,7 @@ actions : <action>
 start   : actions <EOF>
 ```
 """
-module TaglessExample
+module TagfulExample
 using MLStyle
 using UnicodePlots
 
@@ -31,7 +32,29 @@ function Pen(window::Tuple{Int, Int} = (60, 15);
     Pen(x, y, angle, canvas)
 end
 
-function forward(pen::Pen, dist::Float64) 
+## Types of Modeling 
+abstract type Statement end
+
+struct Forward <: Statement
+    distance :: Float64
+end
+
+struct Turn <: Statement
+    angle :: Float64
+end
+
+struct When <: Statement
+    predicate::Function
+    actions :: Vector{Statement}
+end
+
+## Interpretation of Modeling
+function interpret_statement(pen::Pen, s::Turn)
+    pen.angle += s.angle
+end
+
+function interpret_statement(pen::Pen, s::Forward)
+    dist = s.distance
     x, y = pen.x, pen.y
     Δy, Δx = sincos(pen.angle) .* dist
     lines!(pen.canvas, x, y, x + Δx, y + Δy)
@@ -40,8 +63,17 @@ function forward(pen::Pen, dist::Float64)
     nothing
 end
 
-function turn(pen::Pen, theta::Float64)
-    pen.angle += theta
+function interpret_statement(pen::Pen, s::When)
+    if s.predicate(pen)
+        interpret_dsl(s.actions)
+    end
 end
 
-end # module
+## Interpretater
+interpret_dsl(pen::Pen, stmts::AbstractArray{Statement}) =
+    for each in Statement
+        interpret_statement(pen, each)
+    end
+end
+
+end
