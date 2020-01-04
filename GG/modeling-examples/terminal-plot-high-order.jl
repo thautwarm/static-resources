@@ -10,7 +10,7 @@ actions : <action>
 start   : actions <EOF>
 ```
 """
-module TagfulExample
+module TagfulHighOrder
 using MLStyle
 using UnicodePlots
 
@@ -65,13 +65,13 @@ end
 
 function interpret_statement(pen::Pen, s::When)
     if s.predicate(pen)
-        interpret_dsl(s.actions)
+        interpret_dsl(pen, s.actions)
     end
 end
 
-## Interpretater
-interpret_dsl(pen::Pen, stmts::AbstractArray{Statement}) =
-    for each in Statement
+## Interpreter
+function interpret_dsl(pen::Pen, stmts::AbstractArray{Statement})
+    for each in stmts
         interpret_statement(pen, each)
     end
 end
